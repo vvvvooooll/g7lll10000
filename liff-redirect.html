@@ -25,6 +25,8 @@
       margin: 0 auto 16px;
     }
     @keyframes spin { to { transform: rotate(360deg); } }
+    .done { text-align: center; padding: 20px; }
+    .done p { font-size: 16px; color: #333; }
     .error { color: #e74c3c; display: none; text-align: center; padding: 20px; }
     .error a { color: #06C755; font-weight: bold; text-decoration: none; font-size: 18px; }
   </style>
@@ -41,7 +43,7 @@
 
   <script>
     var LIFF_ID = '2009609461-aakLKTYg';
-    var FALLBACK_URL = 'https://lin.ee/QTA5EtQ'; // ← 自分のlin.eeリンクに置き換え
+    var FALLBACK_URL = 'https://lin.ee/QTA5EtQ';
 
     function showError() {
       document.getElementById('loading').style.display = 'none';
@@ -57,20 +59,10 @@
 
       liff.init({ liffId: LIFF_ID })
         .then(function() {
-          if (!liff.isInClient() && !liff.isLoggedIn()) {
-            liff.login({ redirectUri: window.location.href });
-            return;
-          }
-          return liff.getFriendship();
-        })
-        .then(function(friendship) {
-          if (friendship && friendship.friendFlag) {
-            document.getElementById('loading').innerHTML =
-              '<p style="font-size:18px;color:#06C755;">&#10004; 友だち追加済みです！</p>';
-          } else {
-            document.getElementById('loading').innerHTML =
-              '<p style="font-size:16px;">友だち追加ありがとうございます！</p>';
-          }
+          // aggressive設定で友だち追加ダイアログが自動表示される
+          // getFriendship()は呼ばない（認証不要にするため）
+          document.getElementById('loading').innerHTML =
+            '<div class="done"><p>友だち追加ありがとうございます！</p></div>';
         })
         .catch(function(err) {
           console.error('LIFF error:', err);
