@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>LINE友だち追加</title>
+  <style>
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: -apple-system, 'Hiragino Sans', sans-serif;
+      background: #f5f5f5;
+    }
+    .loading { text-align: center; color: #666; }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid #ddd;
+      border-top-color: #06C755;
+      border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .error { color: #e74c3c; display: none; text-align: center; padding: 20px; }
+    .error a { color: #06C755; font-weight: bold; text-decoration: none; font-size: 18px; }
+  </style>
+</head>
+<body>
+  <div class="loading" id="loading">
+    <div class="spinner"></div>
+    <p>読み込み中...</p>
+  </div>
+  <div class="error" id="error">
+    <p>自動遷移できませんでした。</p>
+    <p style="margin-top:12px;"><a id="fallback-link" href="#">こちらをタップして友だち追加</a></p>
+  </div>
+
+  <script>
+    var LIFF_ID = '2009609461-aakLKTYg';
+    var FALLBACK_URL = 'https://lin.ee/QTA5EtQ'; // ← 自分のlin.eeリンクに置き換え
+
+    function showError() {
+      document.getElementById('loading').style.display = 'none';
+      document.getElementById('error').style.display = 'block';
+      document.getElementById('fallback-link').href = FALLBACK_URL;
+    }
+
+    function startLiff() {
+      if (typeof liff === 'undefined') {
+        showError();
+        return;
+      }
+
+      liff.init({ liffId: LIFF_ID })
+        .then(function() {
+          if (!liff.isInClient() && !liff.isLoggedIn()) {
+            liff.login({ redirectUri: window.location.href });
+            return;
+          }
+          return liff.getFriendship();
+        })
+        .then(function(friendship) {
+          if (friendship && friendship.friendFlag) {
+            document.getElementById('loading').innerHTML =
+              '<p style="font-size:18px;color:#06C755;">&#10004; 友だち追加済みです！</p>';
+          } else {
+            document.getElementById('loading').innerHTML =
+              '<p style="font-size:16px;">友だち追加ありがとうございます！</p>';
+          }
+        })
+        .catch(function(err) {
+          console.error('LIFF error:', err);
+          showError();
+        });
+    }
+
+    var script = document.createElement('script');
+    script.src = 'https://static.line-scdn.net/liff/edge/2/sdk.js';
+    script.onload = startLiff;
+    script.onerror = showError;
+    document.head.appendChild(script);
+  </script>
+
+</body>
+</html>
